@@ -35,6 +35,82 @@ file_name <- sub("\\.dta$", "", basename(data_path))
 # ------------------------------------------------------------------------------
 # -------------------- Functions ---------------------------------------------
 # ------------------------------------------------------------------------------
+# 1. Function to add the country columns
+add_country_groups <- function(data) {
+  data %>%
+    mutate(
+      coreterritories = ifelse(iso %in% coreterritories, 1, 0),
+      corecountries = ifelse(iso %in% corecountries, 1, 0),
+      coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
+      EURO = ifelse(iso %in% EURO, 1, 0),
+      NAOC = ifelse(iso %in% NAOC, 1, 0),
+      LATA = ifelse(iso %in% LATA, 1, 0),
+      MENA = ifelse(iso %in% MENA, 1, 0),
+      SSAF = ifelse(iso %in% SSAF, 1, 0),
+      RUCA = ifelse(iso %in% RUCA, 1, 0),
+      EASA = ifelse(iso %in% EASA, 1, 0),
+      SSEA = ifelse(iso %in% SSEA, 1, 0),
+      oil = ifelse(iso %in% oil, 1, 0),
+      non_corecountries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & 
+                                   !grepl("^[OQX]", iso) & 
+                                   !(iso %in% corecountries), 1, 0),
+      regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
+      regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
+      subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
+    )
+}
+
+# 2. Function to add P groups
+add_p_filters <- function(data) {
+  data %>%
+    mutate(
+      Groupped = ifelse(p %in% group, 1, 0),
+      Deciles = ifelse(p %in% deciles, 1, 0),
+      Percentiles = ifelse(p %in% percentiles, 1, 0),
+      Top = ifelse(p %in% top, 1, 0),
+      Bottom = ifelse(p %in% bottom, 1, 0),
+      p0p100 = ifelse(p=="p0p100", 1, 0)
+    )
+}
+
+# 3. Funciton to add widcode filters:
+add_widcodes_filters <- function (data) {
+  data %>%
+    mutate(
+      # One letter indicator
+      Average     = ifelse(grepl("^a",     widcode), 1, 0),
+      Pareto_Lrnz = ifelse(grepl("^b",     widcode), 1, 0),
+      Fem_pop     = ifelse(grepl("^f",     widcode), 1, 0),
+      Gini        = ifelse(grepl("^g",     widcode), 1, 0),
+      Idx_Xrate   = ifelse(grepl("^(i|x)", widcode), 1, 0),
+      Pop         = ifelse(grepl("^n",     widcode), 1, 0),
+      Share       = ifelse(grepl("^s",     widcode), 1, 0),
+      Threshold   = ifelse(grepl("^t",     widcode), 1, 0),
+      Total       = ifelse(grepl("^m",     widcode), 1, 0),
+      Fem_por     = ifelse(grepl("^p",     widcode), 1, 0),
+      Weal_Inc    = ifelse(grepl("^w",     widcode), 1, 0),
+      Top_bot     = ifelse(grepl("^r",     widcode), 1, 0),
+      Emissions   = ifelse(grepl("^e",     widcode), 1, 0),
+      Emssns_pc   = ifelse(grepl("^k",     widcode), 1, 0),
+      Emsn_Avg_g  = ifelse(grepl("^l",     widcode), 1, 0),
+      # Five letter indicators
+      Agg_Income_Macro   = ifelse(grepl(Agg_Income_Macro,   widcode),1, 0),
+      Agg_Income_H_NPISH = ifelse(grepl(Agg_Income_H_NPISH, widcode),1, 0),
+      Agg_Income_Corp    = ifelse(grepl(Agg_Income_Corp,    widcode),1, 0),
+      Agg_Income_Govr    = ifelse(grepl(Agg_Income_Govr,    widcode),1, 0),
+      Agg_Income_CA      = ifelse(grepl(Agg_Income_CA,      widcode),1, 0),
+      Distr_Income   = ifelse(grepl(Distr_Income,   widcode),1, 0),
+      Agg_Wealth     = ifelse(grepl(Agg_Wealth,     widcode),1, 0),
+      Distr_wealth   = ifelse(grepl(Distr_wealth,   widcode),1, 0),
+      Indexes        = ifelse(grepl(Indexes,        widcode),1, 0),
+      Populations    = ifelse(grepl(Populations,    widcode),1, 0),
+      Ratios         = ifelse(grepl(Ratios,         widcode),1, 0),
+      Inequality_Idx = ifelse(grepl(Inequality_Idx, widcode),1, 0),
+      Agg_Carbon     = ifelse(grepl(Agg_Carbon,     widcode),1, 0),
+      Distr_Carbon   = ifelse(grepl(Distr_Carbon,   widcode),1, 0)
+  )
+}
+# 4. Function to Set the height of the heatmap with variating widcodes or p
 get_plot_height <- function(data, base_height = 200, row_height = 10) {
   # Define the possible columns
   possible_columns <- c("widcode", "p", "year")
@@ -50,7 +126,7 @@ get_plot_height <- function(data, base_height = 200, row_height = 10) {
   return(base_height + n * row_height)
 }
 
-
+# 5. Function to Set the height of the heatmap with variating isos
 get_plot_height2 <- function(data, base_height = 100, row_height = 10) {
   n <- nrow(unique(data[, "iso", drop = FALSE]))  # Count unique ISO codes
   return(base_height + n *  row_height)
@@ -145,7 +221,7 @@ Distr_wealth   <- c( "hweal|hwnfa|hwhou|hwdwe|hwlan|hwbus|hwagr|hwnat|hwodk|hwfi
                       hwfiw|hwcud|hwbol|hwequ|hweqi|hwoff|hwpen|hwdeb|hwfie|hwfin|
                       hwcud") 
 
-Indexes        <- c( "nyixx|xlcusp|xlceup|xlcyup|xlcusx|xlceux|xlcyux") #OnlyI
+Indexes        <- c( "nyixx|lcusp|lceup|lcyup|lcusx|lceux|lcyux") #OnlyI
 Populations    <- c( "npopul|npopem|ntaxto|ntaxma|ntaxad|ntaxre")
 Ratios         <- c( "labsh|capsh|wealn|wealp|wealh|weali|wealc|wealg") #Only W
 Inequality_Idx <- c( "quali") #Only I
@@ -275,9 +351,9 @@ oil <- c("AE", "BH", "IQ", "IR", "KW", "OM", "QA", "SA", "YE")
 # ------------------------------------------------------------------------------
 # Create a grid of all possible combinations of isos and years
 grid_1 <- expand.grid(iso = coreterritories, widcode = widcodes_hm,  year=years_hm,  p=p0p100)
-grid_2 <- expand.grid(iso = corecountries,   widcode = widcodes_cc,  year=years_cc,  p=p0p100)
+grid_2 <- expand.grid(iso = corecountriesv,   widcode = widcodes_cc,  year=years_cc,  p=p0p100)
 grid_3 <- expand.grid(iso = coreterritories, widcode = widcodes_cds, year=years_cds, p=any_p)
-grid_4 <- expand.grid(iso = corecountries,   widcode = widcodes_ds,  year=years_ds,  p=any_p)
+grid_4 <- expand.grid(iso = corecountriesv,   widcode = widcodes_ds,  year=years_ds,  p=any_p)
 #grid_5 <- expand.grid(iso = corecountries,   widcode = widcodes_dis,  year=years_cc,  p=any_p)
 #grid_6 <- expand.grid(iso = corecountries,   widcode = widcodes_mac,  year=years_ds,  p=p0p100)
 # Combine all grids into a single dataset
@@ -291,167 +367,39 @@ gridp <-grid %>%
 gridw <-grid %>%
   distinct(iso, widcode)
 #-------------------------------------------------------------------------------------------------------------------
-# Add a column for each vector
-data <- data %>%
-  mutate(
-    coreterritories = ifelse(iso %in% coreterritories, 1, 0),
-    corecountries = ifelse(iso %in% corecountries, 1, 0),
-    coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
-    EURO = ifelse(iso %in% EURO, 1, 0),
-    NAOC = ifelse(iso %in% NAOC, 1, 0),
-    LATA = ifelse(iso %in% LATA, 1, 0),
-    MENA = ifelse(iso %in% MENA, 1, 0),
-    SSAF = ifelse(iso %in% SSAF, 1, 0),
-    RUCA = ifelse(iso %in% RUCA, 1, 0),
-    EASA = ifelse(iso %in% EASA, 1, 0),
-    SSEA = ifelse(iso %in% SSEA, 1, 0),
-    oil = ifelse(iso %in% oil, 1, 0),
-    all_countries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & !grepl("^[OQX]", iso), 1, 0),
-    regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
-    regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
-    subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
-  )
+# Add Country groups
+data <- add_country_groups(data)
+gridy <- add_country_groups(gridy)
+gridp <- add_country_groups(gridp)
+gridw <- add_country_groups(gridw)
 
-region_columns <- c("coreterritories", "EURO", "NAOC", "LATA", "MENA", "SSAF", 
-                    "RUCA", "EASA", "SSEA", "oil",  "corecountries", 
-                    "coreterritoriesmer", "all_countries","regions_PPP",
-                    "regions_MER","subcountries")
-
-
-
-gridy <- gridy %>%
-  mutate(
-    coreterritories = ifelse(iso %in% coreterritories, 1, 0),
-    corecountries = ifelse(iso %in% corecountries, 1, 0),
-    coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
-    EURO = ifelse(iso %in% EURO, 1, 0),
-    NAOC = ifelse(iso %in% NAOC, 1, 0),
-    LATA = ifelse(iso %in% LATA, 1, 0),
-    MENA = ifelse(iso %in% MENA, 1, 0),
-    SSAF = ifelse(iso %in% SSAF, 1, 0),
-    RUCA = ifelse(iso %in% RUCA, 1, 0),
-    EASA = ifelse(iso %in% EASA, 1, 0),
-    SSEA = ifelse(iso %in% SSEA, 1, 0),
-    oil = ifelse(iso %in% oil, 1, 0),
-    all_countries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & !grepl("^[OQX]", iso), 1, 0),
-    regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
-    regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
-    subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
-  )
-gridp <- gridp %>%
-  mutate(
-    coreterritories = ifelse(iso %in% coreterritories, 1, 0),
-    corecountries = ifelse(iso %in% corecountries, 1, 0),
-    coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
-    EURO = ifelse(iso %in% EURO, 1, 0),
-    NAOC = ifelse(iso %in% NAOC, 1, 0),
-    LATA = ifelse(iso %in% LATA, 1, 0),
-    MENA = ifelse(iso %in% MENA, 1, 0),
-    SSAF = ifelse(iso %in% SSAF, 1, 0),
-    RUCA = ifelse(iso %in% RUCA, 1, 0),
-    EASA = ifelse(iso %in% EASA, 1, 0),
-    SSEA = ifelse(iso %in% SSEA, 1, 0),
-    oil = ifelse(iso %in% oil, 1, 0),
-    all_countries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & !grepl("^[OQX]", iso), 1, 0),
-    regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
-    regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
-    subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
-  )
-
-gridw <- gridw %>%
-  mutate(
-    coreterritories = ifelse(iso %in% coreterritories, 1, 0),
-    corecountries = ifelse(iso %in% corecountries, 1, 0),
-    coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
-    EURO = ifelse(iso %in% EURO, 1, 0),
-    NAOC = ifelse(iso %in% NAOC, 1, 0),
-    LATA = ifelse(iso %in% LATA, 1, 0),
-    MENA = ifelse(iso %in% MENA, 1, 0),
-    SSAF = ifelse(iso %in% SSAF, 1, 0),
-    RUCA = ifelse(iso %in% RUCA, 1, 0),
-    EASA = ifelse(iso %in% EASA, 1, 0),
-    SSEA = ifelse(iso %in% SSEA, 1, 0),
-    oil = ifelse(iso %in% oil, 1, 0),
-    all_countries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & !grepl("^[OQX]", iso), 1, 0),
-    regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
-    regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
-    subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
-  )
+# Add P groups
+data <- add_p_filters(data)
+gridp <- add_p_filters(gridp)
 
 # Add a column for each vector
-data <- data %>%
-  mutate(
-    Groupped = ifelse(p %in% group, 1, 0),
-    Deciles = ifelse(p %in% deciles, 1, 0),
-    Percentiles = ifelse(p %in% percentiles, 1, 0),
-    Top = ifelse(p %in% top, 1, 0),
-    Bottom = ifelse(p %in% bottom, 1, 0),
-    p0p100 = ifelse(p=="p0p100", 1, 0)
-  )
-
-gridp <- gridp %>%
-  mutate(
-    Groupped = ifelse(p %in% group, 1, 0),
-    Deciles = ifelse(p %in% deciles, 1, 0),
-    Percentiles = ifelse(p %in% percentiles, 1, 0),
-    Top = ifelse(p %in% top, 1, 0),
-    Bottom = ifelse(p %in% bottom, 1, 0),
-    p0p100 = ifelse(p=="p0p100", 1, 0)
-  )
-
-p_columns <- c("Groupped","Deciles","Percentiles","Top","Bottom","p0p100")
-
-
-# Add a column for each vector
-data <- data %>%
-  mutate(
-    Average     = ifelse(grepl("^a", widcode), 1, 0),
-    Pareto_Lrnz = ifelse(grepl("^b", widcode), 1, 0),
-    Fem_pop     = ifelse(grepl("^f", widcode), 1, 0),
-    Gini        = ifelse(grepl("^g", widcode), 1, 0),
-    Index       = ifelse(grepl("^i", widcode), 1, 0),
-    Pop         = ifelse(grepl("^n", widcode), 1, 0),
-    Share       = ifelse(grepl("^s", widcode), 1, 0),
-    Threshold   = ifelse(grepl("^t", widcode), 1, 0),
-    Total       = ifelse(grepl("^m", widcode), 1, 0),
-    Fem_por     = ifelse(grepl("^p", widcode), 1, 0),
-    Wealth      = ifelse(grepl("^w", widcode), 1, 0),
-    Top_bot     = ifelse(grepl("^r", widcode), 1, 0),
-    Ex_rate     = ifelse(grepl("^x", widcode), 1, 0),
-    Emissions   = ifelse(grepl("^e", widcode), 1, 0),
-    Emssns_pc   = ifelse(grepl("^k", widcode), 1, 0),
-    Emsn_Avg_g  = ifelse(grepl("^l", widcode), 1, 0)
-  )
-
-gridw <- gridw %>%
-  mutate(
-    Average     = ifelse(grepl("^a", widcode), 1, 0),
-    Pareto_Lrnz = ifelse(grepl("^b", widcode), 1, 0),
-    Fem_pop     = ifelse(grepl("^f", widcode), 1, 0),
-    Gini        = ifelse(grepl("^g", widcode), 1, 0),
-    Index       = ifelse(grepl("^i", widcode), 1, 0),
-    Pop         = ifelse(grepl("^n", widcode), 1, 0),
-    Share       = ifelse(grepl("^s", widcode), 1, 0),
-    Threshold   = ifelse(grepl("^t", widcode), 1, 0),
-    Total       = ifelse(grepl("^m", widcode), 1, 0),
-    Fem_por     = ifelse(grepl("^p", widcode), 1, 0),
-    Wealth      = ifelse(grepl("^w", widcode), 1, 0),
-    Top_bot     = ifelse(grepl("^r", widcode), 1, 0),
-    Ex_rate     = ifelse(grepl("^x", widcode), 1, 0),
-    Emissions   = ifelse(grepl("^e", widcode), 1, 0),
-    Emssns_pc   = ifelse(grepl("^k", widcode), 1, 0),
-    Emsn_Avg_g  = ifelse(grepl("^l", widcode), 1, 0)
-  )
-
-w_columns <- c("Average", "Pareto_Lrnz", "Fem_pop", "Gini",
-               "Index", "Pop","Share", "Threshold", "Total", "Fem_por", "Wealth", 
-               "Top_bot", "Ex_rate", "Emissions", "Emssons_pc","Emsns_Avg_g")
-f_columns <- c("Agg_Income","Distr_Income","Agg_Wealth","Distr_wealth","Indexes","Populations","Ratios","Inequality_Idx","Agg_Carbon","Distr_Carbon")
-
-
+data <- add_widcodes_filters(data)
+gridw <- add_widcodes_filters(gridw)
 
 # Generate a result table
 data <- data %>%arrange(iso, year, widcode, p)
+
+# Generate options for the menus of the APP
+region_columns <- c("corecountries",  "non_corecountries", "coreterritories", 
+                    "subcountries", "EURO", "NAOC", "LATA", "MENA", "SSAF", 
+                    "RUCA", "EASA", "SSEA", "oil","coreterritoriesmer",
+                    "regions_PPP", "regions_MER")
+
+p_columns <- c("p0p100","Percentiles","Groupped","Deciles","Top","Bottom")
+
+w_columns <- c("Average", "Pareto_Lrnz", "Fem_pop", "Gini","Idx_Xrate", "Pop","Share", 
+               "Threshold", "Total", "Fem_por", "Weal_Inc", "Top_bot", "Ex_rate", 
+               "Emissions", "Emssons_pc","Emsns_Avg_g")
+f_columns <- c("Agg_Income_Macro","Agg_Income_H_NPISH","Agg_Income_Corp",
+               "Agg_Income_Govr","Agg_Income_CA","Distr_Income","Agg_Wealth",
+               "Distr_wealth","Indexes","Populations","Ratios","Inequality_Idx",
+               "Agg_Carbon","Distr_Carbon")
+
 
 # ------------------------------------------------------------------------------
 # --------------------- Graph --------------------------------------------------
@@ -467,11 +415,11 @@ ui <- fluidPage(
   titlePanel(paste("Frecuency of obs. Country vs. year/Fractile/Widcode in", file_name)),
   # Shared input for Country Group
   fluidRow(
-    column(3, 
+    column(4, 
            selectInput("Country_group", "Select a Country Group:", choices = region_columns)
     ),
   # Shared input for year range
-    column(5, 
+    column(8, 
            sliderInput("year_range", "Select Year Range:",
                        min = min(data$year), max = max(data$year),
                        value = c(min(data$year), max(data$year)),
@@ -521,8 +469,10 @@ server <- function(input, output) {
     col_name1 <- input$Country_group
     col_name2 <- input$P_group
     col_name3 <- input$W_group
+    col_name4 <- input$F_group
     subset(data, year >= input$year_range[1] & year <= input$year_range[2] 
-           & get(col_name1) == 1 & get(col_name2) == 1 & get(col_name3) == 1)
+           & get(col_name1) == 1 & get(col_name2) == 1 &
+             get(col_name3) == 1 & get(col_name4) == 1)
   })
   
   
@@ -543,7 +493,8 @@ server <- function(input, output) {
   filtered_gridw <- reactive({
     col_name1 <- input$Country_group
     col_name3 <- input$W_group
-    subset(gridw, get(col_name1) == 1  & get(col_name3) == 1)
+    col_name4 <- input$F_group
+    subset(gridw, get(col_name1) == 1  & get(col_name3) == 1 & get(col_name4) == 1)
   })
   
   # Count the observations in the dataset for each combination of iso and year
@@ -598,7 +549,8 @@ server <- function(input, output) {
       hovertemplate = paste(
         "Year: %{x}<br>",
         "ISO: %{y}<br>",
-        "Count: %{z}<br>"
+        "Count: %{z}<br>",
+        "<extra></extra>"
       )
     ) %>% 
       layout(
@@ -625,7 +577,8 @@ server <- function(input, output) {
       hovertemplate = paste(
         "Country: %{x}<br>",
         "P: %{y}<br>",
-        "Count: %{z}<br>"
+        "Count: %{z}<br>",
+        "<extra></extra>"
       )
     ) %>% 
       layout(
@@ -651,7 +604,8 @@ server <- function(input, output) {
       hovertemplate = paste(
         "Country: %{x}<br>",
         "Widcode: %{y}<br>",
-        "Count: %{z}<br>"
+        "Count: %{z}<br>",
+        "<extra></extra>"
       )
     ) %>% 
       layout(
