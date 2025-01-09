@@ -53,7 +53,7 @@ add_country_groups <- function(data) {
       oil = ifelse(iso %in% oil, 1, 0),
       non_corecountries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & 
                                    !grepl("^[OQX]", iso) & 
-                                   !(iso %in% corecountries), 1, 0),
+                                   (iso %in% not_corecountries), 1, 0),
       regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
       regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
       subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
@@ -305,6 +305,8 @@ corecountries <- c("AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AT", "
                    "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VC", "VE", "VG", 
                    "VN", "VU", "WS", "YE", "ZA", "ZM", "ZW")
 
+not_corecountries <- c("AS", "CK", "CS", "DD", "FO", "GU", "MF", "MP", "SL", "SU", "VI", "XI", "YU", "ZZ")
+
 coreterritories <- c("RU", "OA", "CN", "JP", "OB", "DE", "ES", "FR", "GB", "IT", "SE", "OC", 
                      "QM", "AR", "BR", "CL", "CO", "MX", "OD", "DZ", "EG", "TR", "OE", "CA", 
                      "US", "AU", "NZ", "OH", "IN", "ID", "OI", "ZA", "OJ")
@@ -351,9 +353,9 @@ oil <- c("AE", "BH", "IQ", "IR", "KW", "OM", "QA", "SA", "YE")
 # ------------------------------------------------------------------------------
 # Create a grid of all possible combinations of isos and years
 grid_1 <- expand.grid(iso = coreterritories, widcode = widcodes_hm,  year=years_hm,  p=p0p100)
-grid_2 <- expand.grid(iso = corecountriesv,   widcode = widcodes_cc,  year=years_cc,  p=p0p100)
+grid_2 <- expand.grid(iso = corecountries,   widcode = widcodes_cc,  year=years_cc,  p=p0p100)
 grid_3 <- expand.grid(iso = coreterritories, widcode = widcodes_cds, year=years_cds, p=any_p)
-grid_4 <- expand.grid(iso = corecountriesv,   widcode = widcodes_ds,  year=years_ds,  p=any_p)
+grid_4 <- expand.grid(iso = corecountries,   widcode = widcodes_ds,  year=years_ds,  p=any_p)
 #grid_5 <- expand.grid(iso = corecountries,   widcode = widcodes_dis,  year=years_cc,  p=any_p)
 #grid_6 <- expand.grid(iso = corecountries,   widcode = widcodes_mac,  year=years_ds,  p=p0p100)
 # Combine all grids into a single dataset
@@ -385,7 +387,7 @@ gridw <- add_widcodes_filters(gridw)
 data <- data %>%arrange(iso, year, widcode, p)
 
 # Generate options for the menus of the APP
-region_columns <- c("corecountries",  "non_corecountries", "coreterritories", 
+region_columns <- c("corecountries",  "not_corecountries", "coreterritories", 
                     "subcountries", "EURO", "NAOC", "LATA", "MENA", "SSAF", 
                     "RUCA", "EASA", "SSEA", "oil","coreterritoriesmer",
                     "regions_PPP", "regions_MER")
