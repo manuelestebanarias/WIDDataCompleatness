@@ -39,24 +39,24 @@ file_name <- sub("\\.dta$", "", basename(data_path))
 add_country_groups <- function(data) {
   data %>%
     mutate(
-      coreterritories = ifelse(iso %in% coreterritories, 1, 0),
-      corecountries = ifelse(iso %in% corecountries, 1, 0),
-      coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
-      EURO = ifelse(iso %in% EURO, 1, 0),
-      NAOC = ifelse(iso %in% NAOC, 1, 0),
-      LATA = ifelse(iso %in% LATA, 1, 0),
-      MENA = ifelse(iso %in% MENA, 1, 0),
-      SSAF = ifelse(iso %in% SSAF, 1, 0),
-      RUCA = ifelse(iso %in% RUCA, 1, 0),
-      EASA = ifelse(iso %in% EASA, 1, 0),
-      SSEA = ifelse(iso %in% SSEA, 1, 0),
-      oil = ifelse(iso %in% oil, 1, 0),
-      non_corecountries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & 
+      Coreterritories = ifelse(iso %in% coreterritories, 1, 0),
+      Corecountries = ifelse(iso %in% corecountries, 1, 0),
+      Coreterritoriesmer = ifelse(iso %in% coreterritoriesmer, 1, 0),
+      Europe = ifelse(iso %in% EURO, 1, 0),
+      NorthAmerica_Oceania = ifelse(iso %in% NAOC, 1, 0),
+      LatinAmerica = ifelse(iso %in% LATA, 1, 0),
+      MiddleEast_NorthAfrica = ifelse(iso %in% MENA, 1, 0),
+      SubSaharanAfrica = ifelse(iso %in% SSAF, 1, 0),
+      Russia_CentralAsia = ifelse(iso %in% RUCA, 1, 0),
+      EastAsia = ifelse(iso %in% EASA, 1, 0),
+      South_EastAsia = ifelse(iso %in% SSEA, 1, 0),
+      Oil = ifelse(iso %in% oil, 1, 0),
+      Non_corecountries = ifelse(grepl("^[A-NP-Z][A-Z]$", iso) & 
                                    !grepl("^[OQX]", iso) & 
                                    (iso %in% not_corecountries), 1, 0),
-      regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
-      regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
-      subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
+      Regions_PPP = ifelse(grepl("^[OQX][A-Z]$", iso), 1, 0),
+      Regions_MER = ifelse(grepl("^[A-Z]{2}-MER$", iso), 1, 0),
+      Subcountries = ifelse(grepl("^[A-Z]{2}-[A-Z&]+$", iso), 1, 0)
     )
 }
 
@@ -387,10 +387,10 @@ gridw <- add_widcodes_filters(gridw)
 data <- data %>%arrange(iso, year, widcode, p)
 
 # Generate options for the menus of the APP
-region_columns <- c("corecountries",  "not_corecountries", "coreterritories", 
-                    "subcountries", "EURO", "NAOC", "LATA", "MENA", "SSAF", 
-                    "RUCA", "EASA", "SSEA", "oil","coreterritoriesmer",
-                    "regions_PPP", "regions_MER")
+region_columns <- c("Corecountries",  "Not_corecountries", "Coreterritories", 
+                    "Subcountries", "Europe", "NorthAmerica_Oceania", "LatinAmerica", "MiddleEast_NorthAfrica", "SubSaharanAfrica", 
+                    "Russia_CentralAsia", "EastAsia", "South_EastAsia", "Oil","Coreterritoriesmer",
+                    "Regions_PPP", "Regions_MER")
 
 p_columns <- c("p0p100","Percentiles","Groupped","Deciles","Top","Bottom")
 
