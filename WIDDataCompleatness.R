@@ -420,6 +420,7 @@ f_columns <- c("Agg_Income_Macro","Agg_Income_H_NPISH","Agg_Income_Corp",
 
 
 
+
 # ------------------------------------------------------------------------------
 # --------------------- Graph --------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -455,7 +456,9 @@ ui <- fluidPage(
                          selected = f_columns[6:6]),
       
       # Shared input for P group
-      selectInput("P_group", "P Group:", choices = p_columns)
+      checkboxGroupInput("P_group", "Fractile P group:", choices = p_columns,
+                         selected = p_columns[1:1]),
+      
     ),
     
     mainPanel(
@@ -502,11 +505,14 @@ server <- function(input, output) {
     col_name2 <- input$P_group
     col_name3 <- input$W_group
     col_name4 <- input$F_group
+    
     condition_string <- build_condition_string(col_name4)
+    condition_string2 <- build_condition_string(col_name2)
+    
     # Filter data
     subset(data, year >= input$year_range[1] & year <= input$year_range[2] &
-             get(col_name1) == 1 & get(col_name2) == 1 &
-             get(col_name3) == 1 & eval(parse(text = condition_string)))
+             get(col_name1) == 1 & eval(parse(text = condition_string)) &
+             get(col_name3) == 1 & eval(parse(text = condition_string2)))
   })
   
   # Reactive function for filtered gridy
@@ -520,7 +526,8 @@ server <- function(input, output) {
   filtered_gridp <- reactive({
     col_name1 <- input$Country_group
     col_name2 <- input$P_group
-    subset(gridp, get(col_name1) == 1  & get(col_name2) == 1)
+    condition_string2 <- build_condition_string(col_name2)
+    subset(gridp, get(col_name1) == 1  & eval(parse(text = condition_string2)))
   })
   # 1. grid widcode
   filtered_gridw <- reactive({
@@ -528,10 +535,10 @@ server <- function(input, output) {
     col_name1 <- input$Country_group
     col_name3 <- input$W_group
     col_name4 <- input$F_group
-    condition_string <- build_condition_string(col_name4)
-    # Use %in% for multiple selections
+    condition_string3 <- build_condition_string(col_name4)
+    
     subset(gridw, get(col_name1) == 1 & get(col_name3) == 1 
-                  & eval(parse(text = condition_string)))
+                  & eval(parse(text = condition_string3)))
   })
   
   # Count the observations in the dataset for each combination of iso and year
