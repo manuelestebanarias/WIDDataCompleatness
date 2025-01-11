@@ -127,7 +127,7 @@ get_plot_height <- function(data, base_height = 200, row_height = 10) {
 }
 
 # 5. Function to Set the height of the heatmap with variating isos
-get_plot_height2 <- function(data, base_height = 100, row_height = 10) {
+get_plot_height2 <- function(data, base_height = 300, row_height = 10) {
   n <- nrow(unique(data[, "iso", drop = FALSE]))  # Count unique ISO codes
   return(base_height + n *  row_height)
 }
@@ -406,59 +406,60 @@ f_columns <- c("Agg_Income_Macro","Agg_Income_H_NPISH","Agg_Income_Corp",
 # ------------------------------------------------------------------------------
 # --------------------- Graph --------------------------------------------------
 # ------------------------------------------------------------------------------
-# UI for the app
+# Updated UI for the app
 ui <- fluidPage(
   tags$style(HTML("
     .plotly-container {
       width: 100% !important;
       height: auto !important;
     }
+    .well {
+      background-color: #4682B4; /* Blue background */
+      color: white; /* White text */
+      border: none; /* Remove border */
+    }
+    .well select, .well input, .well label {
+      color: white; /* White text for labels and inputs */
+    }
   ")),
-  titlePanel(paste("Frecuency of obs. Country vs. year/Fractile/Widcode in", file_name)),
-  # Shared input for Country Group
-  fluidRow(
-    column(4, 
-           selectInput("Country_group", "Select a Country Group:", choices = region_columns)
+  titlePanel(paste("Observation count in", file_name, ".dta")),
+  
+  # Sidebar layout with input and output panels
+  sidebarLayout(
+    sidebarPanel(
+      width = 3, # Adjust width of the sidebar (out of 12 total columns)
+      
+      # Shared input for Country Group
+      selectInput("Country_group", " Country Group:", choices = region_columns),
+      
+      # Shared input for Year Range
+      sliderInput("year_range", "Select Year Range:",
+                  min = min(data$year), max = max(data$year),
+                  value = c(min(data$year), max(data$year)),
+                  step = 10),
+      
+      # Shared input for Widcode group
+      selectInput("F_group", " Fivelet Group for Widcodes:", choices = f_columns),
+      
+      selectInput("W_group", " Index Group for Widcodes:", choices = w_columns),
+      
+      # Shared input for P group
+      selectInput("P_group", " P Group:", choices = p_columns)
     ),
-  # Shared input for year range
-    column(8, 
-           sliderInput("year_range", "Select Year Range:",
-                       min = min(data$year), max = max(data$year),
-                       value = c(min(data$year), max(data$year)),
-                       step = 10)
-    )
-  ),
-  fluidRow(
-  # Shared input for Widcode group
-  column(4, 
-         selectInput("F_group", "Select Fivelet Group for Widcodes:", choices = f_columns)
-  ),
-  # Shared input for Widcode group
-    column(4, 
-           selectInput("W_group", "Select Index Group for Widcodes:", choices = w_columns)
-    ),
-  # Shared input for P group
-  column(4, 
-         selectInput("P_group", "Select P Group:", choices = p_columns)
-  )
-  ),
-  #------------------------------------------------------
-  # Inputs and outputs for the first graph
-  fluidRow(
-    column(12, 
-           plotlyOutput("heatmap_year", height = "auto", width = "100%") # "400px")
-    )
-  ),
-  # Inputs and outputs for the second graph
-  fluidRow(
-    column(12, 
-           plotlyOutput("heatmap_p", height = "auto", width = "100%") # "400px")
-    )
-  ),
-  # Inputs and outputs for the third graph
-  fluidRow(
-    column(12, 
-           plotlyOutput("heatmap_w", height = "auto", width = "100%") #"400px")
+    
+    mainPanel(
+      width = 9, # Adjust width of the main panel (out of 12 total columns)
+      
+      # Outputs for the three heatmaps
+      fluidRow(
+        plotlyOutput("heatmap_year", height = "auto", width = "100%")
+      ),
+      fluidRow(
+        plotlyOutput("heatmap_p", height = "auto", width = "100%")
+      ),
+      fluidRow(
+        plotlyOutput("heatmap_w", height = "auto", width = "100%")
+      )
     )
   )
 )
@@ -556,7 +557,7 @@ server <- function(input, output) {
       )
     ) %>% 
       layout(
-        title = "Frecuency Country-Year",
+        title = "Count Country-Year",
         #xaxis = list(title = "ISO Alpha-2"),
         yaxis = list(title = "ISO Alpha-2"),
         plot_bgcolor = "crimson",       # Set the plot background color to red
@@ -584,7 +585,7 @@ server <- function(input, output) {
       )
     ) %>% 
       layout(
-        title = "Frecuency Country-Fractile_Group",
+        title = "Count Country-Fractile_Group",
         xaxis = list(title = "ISO Alpha-2"),
         #yaxis = list(title = "ISO Alpha-2"),
         plot_bgcolor = "crimson", 
@@ -611,7 +612,7 @@ server <- function(input, output) {
       )
     ) %>% 
       layout(
-        title = "Frecuency Country-Widcode_Group",
+        title = "Count Country-Widcode_Group",
         #xaxis = list(title = "ISO Alpha-2"),
         yaxis = list(title = NULL),
         plot_bgcolor = "crimson", 
