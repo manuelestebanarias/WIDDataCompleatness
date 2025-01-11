@@ -16,6 +16,7 @@ library(plotly)
 library(shiny)
 library(openxlsx)
 library(stringr) 
+library(purrr)
 
 # ------------------------------------------------------------------------------
 # -------------------- Path setting --------------------------------------------
@@ -131,6 +132,19 @@ get_plot_height2 <- function(data, base_height = 300, row_height = 10) {
   n <- nrow(unique(data[, "iso", drop = FALSE]))  # Count unique ISO codes
   return(base_height + n *  row_height)
 }
+
+
+# 6. Funciton for generting conditions for multiple  group selections
+build_condition_string <- function(col_name4) {
+  # Generate the condition string for each element in col_name4
+  conditions <- paste0("get('", col_name4, "') == 1")
+  
+  # Combine all conditions with the '&' operator
+  condition_string <- paste(conditions, collapse = " | ")
+  
+  return(condition_string)
+}
+
 # ------------------------------------------------------------------------------
 # -------------------- Definitions ---------------------------------------------
 # ------------------------------------------------------------------------------
@@ -387,9 +401,10 @@ gridw <- add_widcodes_filters(gridw)
 data <- data %>%arrange(iso, year, widcode, p)
 
 # Generate options for the menus of the APP
-region_columns <- c("Corecountries",  "Not_corecountries", "Coreterritories", 
-                    "Subcountries", "Europe", "NorthAmerica_Oceania", "LatinAmerica", "MiddleEast_NorthAfrica", "SubSaharanAfrica", 
-                    "Russia_CentralAsia", "EastAsia", "South_EastAsia", "Oil","Coreterritoriesmer",
+region_columns <- c("Corecountries",  "Non_corecountries", "Coreterritories", 
+                    "Subcountries", "Europe", "NorthAmerica_Oceania", "LatinAmerica", 
+                    "MiddleEast_NorthAfrica","SubSaharanAfrica", "Russia_CentralAsia",
+                    "EastAsia", "South_EastAsia", "Oil","Coreterritoriesmer",
                     "Regions_PPP", "Regions_MER")
 
 p_columns <- c("p0p100","Percentiles","Groupped","Deciles","Top","Bottom")
@@ -436,7 +451,8 @@ ui <- fluidPage(
       selectInput("Country_group", "Country Group:", choices = region_columns),
       
       # Shared input for Widcode group
-      selectInput("F_group", "Fivelet Group for Widcodes:", choices = f_columns),
+      checkboxGroupInput("F_group", "Fivelet Group for Widcodes:", choices = f_columns,
+                         selected = f_columns[6:6]),
       
       # Shared input for P group
       selectInput("P_group", "P Group:", choices = p_columns)
@@ -481,15 +497,17 @@ server <- function(input, output) {
   
   # Data filteres
   filtered_data <- reactive({
+    req(input$Country_group, input$P_group, input$W_group, input$F_group)
     col_name1 <- input$Country_group
     col_name2 <- input$P_group
     col_name3 <- input$W_group
     col_name4 <- input$F_group
-    subset(data, year >= input$year_range[1] & year <= input$year_range[2] 
-           & get(col_name1) == 1 & get(col_name2) == 1 &
-             get(col_name3) == 1 & get(col_name4) == 1)
+    condition_string <- build_condition_string(col_name4)
+    # Filter data
+    subset(data, year >= input$year_range[1] & year <= input$year_range[2] &
+             get(col_name1) == 1 & get(col_name2) == 1 &
+             get(col_name3) == 1 & eval(parse(text = condition_string)))
   })
-  
   
   # Reactive function for filtered gridy
   # 1. grid Year
@@ -506,10 +524,14 @@ server <- function(input, output) {
   })
   # 1. grid widcode
   filtered_gridw <- reactive({
+    req(input$Country_group, input$W_group, input$F_group) # Ensure inputs are non-null
     col_name1 <- input$Country_group
     col_name3 <- input$W_group
     col_name4 <- input$F_group
-    subset(gridw, get(col_name1) == 1  & get(col_name3) == 1 & get(col_name4) == 1)
+    condition_string <- build_condition_string(col_name4)
+    # Use %in% for multiple selections
+    subset(gridw, get(col_name1) == 1 & get(col_name3) == 1 
+                  & eval(parse(text = condition_string)))
   })
   
   # Count the observations in the dataset for each combination of iso and year
@@ -627,6 +649,8 @@ server <- function(input, output) {
         height = plot_height  # Apply dynamic height
       )
   })
+  
+
 }
 
 # Run the app
