@@ -74,7 +74,7 @@ w_columns <- c("(a) Average"="Average",
                "(b) Inverted Pareto-Lorenz coefficient"="Pareto_Lrnz", 
                "(f) Female population"="Fem_pop", 
                "(g) Gini coefficient"="Gini",
-               "(i) Index"="Idx_Xrate",
+               "(i) Index & (x) Exchange rate (market or PPP)"="Idx_Xrate",
                "(n) Population"="Pop",
                "(s) Share"="Share", 
                "(t) Threshold"="Threshold", 
@@ -82,10 +82,11 @@ w_columns <- c("(a) Average"="Average",
                "(p) Proportion of women"="Fem_por", 
                "(w) Wealth-to-income ratio or labor/capital share"="Weal_Inc", 
                "(r) Top 10/Bottom 50 ratio"="Top_bot", 
-               "(x) Exchange rate (market or PPP)"="Ex_rate", 
+               #"(x) Exchange rate (market or PPP)"="Ex_rate", 
                "(e) Total emissions"="Emissions", 
                "(k) Per capita emissions"="Emssons_pc",
                "(l) Average per capita group emissions"="Emsns_Avg_g")
+
 f_columns <- c("Aggregate Income Variables: Net National Income, GDP, Foreign Incomes, Foreign Wealth, & Consumption of Fixed Capital"="Agg_Income_Macro",
                "Aggregate Income Variables: Income of Households and NPISH"="Agg_Income_H_NPISH",
                "Aggregate Income Variables: Income of the Corporate Sector"="Agg_Income_Corp",
@@ -285,7 +286,7 @@ server <- function(input, output) {
     ) %>% 
       layout(
         title = "Count Country-Year",
-        yaxis = list(title = "ISO Alpha-2", side='right'),
+        yaxis = list(title = "ISO Alpha-2", side='left'),
         plot_bgcolor = "crimson",       # Set the plot background color to red
         height = plot_height  # Apply dynamic height
       )

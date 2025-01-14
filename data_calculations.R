@@ -21,6 +21,9 @@ library(tidyr)
 # -------------------- Path setting --------------------------------------------
 # ------------------------------------------------------------------------------
 data_path <- "/Users/manuelestebanarias/Documents/GitHub/wid-world/work-data_updated/aggregate-regions-output.dta"
+#data_path <- "/Users/manuelestebanarias/Documents/GitHub/wid-world/work-data_updated/wid-long.dta"
+
+
 export_path <- "/Users/manuelestebanarias/Documents/GitHub/WIDDataCompleatness"
 
 app_path <- file.path(export_path, "WIDDataCompleatness.R")
