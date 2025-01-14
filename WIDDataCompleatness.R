@@ -46,39 +46,106 @@ build_condition_string <- function(col_name4) {
   return(condition_string)
 }
 
+#------------------------ Option definiton -------------------------------------------------
+# Generate options for the menus of the APP
+region_columns <- c("Core-Countries"="Corecountries", 
+                    "Other countries (Not core)"="Not_corecountries", "Coreterritories", 
+                    "Sub-National jurisdictions"="Subcountries", 
+                    "Europe", 
+                    "North America and Oceania"="NorthAmerica_Oceania", "LatinAmerica", 
+                    "Middle East & North Africa"="MiddleEast_NorthAfrica",
+                    "Sub-Saharan Africa"="SubSaharanAfrica",
+                    "Russia & Central Asia"="Russia_CentralAsia",
+                    "East Asia"="EastAsia", 
+                    "South & South-East Asia"="South_EastAsia",
+                    "Oil",
+                    "Core-territories (Market Exchange Rate)"="Coreterritoriesmer",
+                    "Regions (PPP Conversion Factors)"="Regions_PPP",
+                    "Regions (Market Exchange Rate)"="Regions_MER")
+
+p_columns <- c("p0p100",
+               "Percentiles (p0p1, p1p2, p2p3, ..., p98.999p99.999, p99.999p100)"="Percentiles",
+               "Groupped    (p0p50, p50p90, p90p100, p99p100)"="Groupped",
+               "Deciles     (p10p20, p20p30, ..., p90p100)"="Deciles",
+               "Top         (p0p100, p1p100, p2p1000, ..., p98.999p100,p99.999p100)"="Top",
+               "Bottom      (p0p1, p0p2, p0p3, ..., p0p99.999, p0p100)"="Bottom")
+
+w_columns <- c("(a) Average"="Average", 
+               "(b) Inverted Pareto-Lorenz coefficient"="Pareto_Lrnz", 
+               "(f) Female population"="Fem_pop", 
+               "(g) Gini coefficient"="Gini",
+               "(i) Index"="Idx_Xrate",
+               "(n) Population"="Pop",
+               "(s) Share"="Share", 
+               "(t) Threshold"="Threshold", 
+               "(m) Total"="Total",
+               "(p) Proportion of women"="Fem_por", 
+               "(w) Wealth-to-income ratio or labor/capital share"="Weal_Inc", 
+               "(r) Top 10/Bottom 50 ratio"="Top_bot", 
+               "(x) Exchange rate (market or PPP)"="Ex_rate", 
+               "(e) Total emissions"="Emissions", 
+               "(k) Per capita emissions"="Emssons_pc",
+               "(l) Average per capita group emissions"="Emsns_Avg_g")
+f_columns <- c("Aggregate Income Variables: Net National Income, GDP, Foreign Incomes, Foreign Wealth, & Consumption of Fixed Capital"="Agg_Income_Macro",
+               "Aggregate Income Variables: Income of Households and NPISH"="Agg_Income_H_NPISH",
+               "Aggregate Income Variables: Income of the Corporate Sector"="Agg_Income_Corp",
+               "Aggregate Income Variables: Income of the Government Sector"="Agg_Income_Govr",
+               "Aggregate Income Variables: Current Account"="Agg_Income_CA",
+               "Distributed Income Variables"="Distr_Income",
+               "Aggregate Wealth Variables"="Agg_Wealth",
+               "Distributed Wealth Variables"="Distr_wealth",
+               "Price Index & Exchange Rates"="Indexes",
+               "Population"="Populations",
+               "Wealth/Income Ratios and Labor/Capital Share"="Ratios",
+               "Inequality Transparency"="Inequality_Idx",
+               "Aggregate Carbon Variables"="Agg_Carbon",
+               "Distributed Carbon Variables"="Distr_Carbon")
+
 #------------------------ App -------------------------------------------------
-
-
 ui <- fluidPage(
   tags$style(HTML("
+    .custom-title { /* Use a period to define a class selector */
+      text-align: left; /* Align to the right */
+      color: #104E8B; /* Set text color */
+      font-size: 52 px; /* Optional: Adjust font size */
+      font-weight: bold; /* Optional: Make it bold */
+      font-family: 'Gill sans', system-ui; /* Choose a font here */
+    }
     .sidebar { 
       background-color: #28a745; /* Green background */
       color: white; /* White text for better contrast */
+      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
     }
     .sidebar .form-group, .sidebar label {
       color: white; /* Ensure text within the sidebar is white */
+      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
     }
     .top-controls {
       margin-bottom: 20px; /* Add spacing between controls and heatmaps */
+      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
     }
   ")),
   
-  titlePanel(paste("Observation count in", file_name, ".dta")),
+  titlePanel(
+    div(class = "custom-title", paste("Observation count in", file_name, ".dta"))
+  ),
   
   # Sidebar layout with input and main panel
   sidebarLayout(
     sidebarPanel(
       class = "sidebar",
       width = 3,
+    
       # Shared input for Country Group
       selectInput("Country_group", "Country Group:", choices = region_columns),
+      
+      selectInput("W_group", "Index Group for Widcodes:", choices = w_columns),
       # Shared input for Widcode group
       checkboxGroupInput("F_group", "Fivelet Group for Widcodes:", choices = f_columns,
                          selected = f_columns[6:6]),
       # Shared input for P group
       checkboxGroupInput("P_group", "Fractile P group:", choices = p_columns,
-                         selected = p_columns[1:1]),
-      
+                         selected = p_columns[2:2])
     ),
     mainPanel(
       width = 9,
@@ -87,15 +154,14 @@ ui <- fluidPage(
         # Top controls outside of sidebar layout
         fluidRow(
           column(
-            width = 9, 
+            width = 12,
+            align = "center",
             sliderInput("year_range", "Select Year Range:",
                         min = min(data$year), max = max(data$year),
                         value = c(min(data$year), max(data$year)),
-                        step = 10)
-          ),
-          column(
-            width = 3, 
-            selectInput("W_group", "Index Group for Widcodes:", choices = w_columns)
+                        step = 10,
+                        sep="",
+                        width = "95%")
           )
         ),
         fluidRow(
@@ -219,7 +285,7 @@ server <- function(input, output) {
     ) %>% 
       layout(
         title = "Count Country-Year",
-        yaxis = list(title = "ISO Alpha-2"),
+        yaxis = list(title = "ISO Alpha-2", side='right'),
         plot_bgcolor = "crimson",       # Set the plot background color to red
         height = plot_height  # Apply dynamic height
       )

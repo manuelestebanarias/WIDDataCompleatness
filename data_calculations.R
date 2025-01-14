@@ -470,27 +470,5 @@ gridw <- add_widcodes_filters(gridw)
 data <- data %>%arrange(iso, widcode, year,  p)
 
 
-
-# Generate options for the menus of the APP
-region_columns <- c("Corecountries",  "Not_corecountries", "Coreterritories", 
-                    "Subcountries", "Europe", "NorthAmerica_Oceania", "LatinAmerica", 
-                    "MiddleEast_NorthAfrica","SubSaharanAfrica", "Russia_CentralAsia",
-                    "EastAsia", "South_EastAsia", "Oil","Coreterritoriesmer",
-                    "Regions_PPP", "Regions_MER")
-
-p_columns <- c("p0p100","Percentiles","Groupped","Deciles","Top","Bottom")
-
-w_columns <- c("Average", "Pareto_Lrnz", "Fem_pop", "Gini","Idx_Xrate", "Pop","Share", 
-               "Threshold", "Total", "Fem_por", "Weal_Inc", "Top_bot", "Ex_rate", 
-               "Emissions", "Emssons_pc","Emsns_Avg_g")
-f_columns <- c("Agg_Income_Macro","Agg_Income_H_NPISH","Agg_Income_Corp",
-               "Agg_Income_Govr","Agg_Income_CA","Distr_Income","Agg_Wealth",
-               "Distr_wealth","Indexes","Populations","Ratios","Inequality_Idx",
-               "Agg_Carbon","Distr_Carbon")
-
-# Order for P
-data$first_number <- gsub("p([0-9\\.]+)p.*", "\\1", data$p)
-data$second_number <- gsub(".*p([0-9\\.]+)$", "\\1", data$p)
-
 # Run the app
 #runApp(app_path)
