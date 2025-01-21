@@ -105,25 +105,25 @@ f_columns <- c("Aggregate Income Variables: Net National Income, GDP, Foreign In
 #------------------------ App -------------------------------------------------
 ui <- fluidPage(
   tags$style(HTML("
-    .custom-title { /* Use a period to define a class selector */
-      text-align: left; /* Align to the right */
-      color: #104E8B; /* Set text color */
-      font-size: 52 px; /* Optional: Adjust font size */
-      font-weight: bold; /* Optional: Make it bold */
-      font-family: 'Gill sans', system-ui; /* Choose a font here */
+    .custom-title {
+      text-align: left;
+      color: #104E8B;
+      font-size: 52px;
+      font-weight: bold;
+      font-family: 'Gill sans', system-ui;
     }
-    .sidebar { 
-      background-color: #28a745; /* Green background */
-      color: white; /* White text for better contrast */
-      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
+    .sidebar {
+      background-color: #28a745;
+      color: white;
+      font-family: 'Gill Sans', system-ui;
     }
     .sidebar .form-group, .sidebar label {
-      color: white; /* Ensure text within the sidebar is white */
-      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
+      color: white;
+      font-family: 'Gill Sans', system-ui;
     }
     .top-controls {
-      margin-bottom: 20px; /* Add spacing between controls and heatmaps */
-      font-family: 'Gill Sans', system-ui; /* Labels and controls in sidebar */
+      margin-bottom: 20px;
+      font-family: 'Gill Sans', system-ui;
     }
   ")),
   
@@ -131,20 +131,14 @@ ui <- fluidPage(
     div(class = "custom-title", paste("Observation count in", file_name, ".dta"))
   ),
   
-  # Sidebar layout with input and main panel
   sidebarLayout(
     sidebarPanel(
       class = "sidebar",
       width = 3,
-    
-      # Shared input for Country Group
       selectInput("Country_group", "Country Group:", choices = region_columns),
-      
       selectInput("W_group", "Index Group for Widcodes:", choices = w_columns),
-      # Shared input for Widcode group
       checkboxGroupInput("F_group", "Fivelet Group for Widcodes:", choices = f_columns,
                          selected = f_columns[6:6]),
-      # Shared input for P group
       checkboxGroupInput("P_group", "Fractile P group:", choices = p_columns,
                          selected = p_columns[2:2])
     ),
@@ -152,7 +146,6 @@ ui <- fluidPage(
       width = 9,
       div(
         class = "top-controls",
-        # Top controls outside of sidebar layout
         fluidRow(
           column(
             width = 12,
@@ -160,25 +153,33 @@ ui <- fluidPage(
             sliderInput("year_range", "Select Year Range:",
                         min = min(data$year), max = max(data$year),
                         value = c(min(data$year), max(data$year)),
-                        step = 10,
-                        sep="",
-                        width = "95%")
+                        step = 10, sep = "", width = "95%")
           )
-        ),
-        fluidRow(
+        )
+      ),
+      tabsetPanel(
+        id = "heatmap_tabs",
+        tabPanel(
+          title = "Through the gentle passage of time",
           plotlyOutput("heatmap_year", height = "auto", width = "100%")
         ),
-        fluidRow(
-          plotlyOutput("heatmap_p", height = "auto", width = "100%")
-        ),
-        fluidRow(
-          plotlyOutput("heatmap_w", height = "auto", width = "100%")
+        tabPanel(
+          title = "Amidst the dance of percentiles and widcodes",
+          fluidRow(
+            column(
+              width = 12,
+              plotlyOutput("heatmap_p", height = "auto", width = "100%")
+            ),
+            column(
+              width = 12,
+              plotlyOutput("heatmap_w", height = "auto", width = "100%")
+            )
+          )
         )
       )
     )
   )
 )
-
 
 # Server function
 server <- function(input, output) {
@@ -276,7 +277,7 @@ server <- function(input, output) {
       y = ~iso,
       z = ~count,
       type = "heatmap",
-      colors = c( "steelblue1", "dodgerblue4"),
+      colors = c("steelblue1", "dodgerblue4"),
       hovertemplate = paste(
         "Country: %{y}<br>",
         "Year: %{x}<br>",
@@ -286,11 +287,19 @@ server <- function(input, output) {
     ) %>% 
       layout(
         title = "Count Country-Year",
-        yaxis = list(title = "ISO Alpha-2", side='left'),
-        plot_bgcolor = "crimson",       # Set the plot background color to red
+        yaxis = list(title = "ISO Alpha-2", side = 'left'),
+        xaxis = list(
+          title = "Year",
+          tickvals = unique(datay$year),
+          tickformat = "d",  # Format to remove commas and display integers only
+          tickmode = "auto",     # Let Plotly decide tick placement
+          nticks = "auto"        # Ensure optimal number of ticks
+          ),
+        plot_bgcolor = "crimson",  # Set the plot background color to red
         height = plot_height  # Apply dynamic height
       )
   })
+  
   
   # Render the second heatmap
   output$heatmap_p <- renderPlotly({
