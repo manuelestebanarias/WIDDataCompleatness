@@ -67,7 +67,7 @@ p_columns <- c("p0p100",
                "Percentiles (p0p1, p1p2, p2p3, ..., p98.999p99.999, p99.999p100)"="Percentiles",
                "Groupped    (p0p50, p50p90, p90p100, p99p100)"="Groupped",
                "Deciles     (p10p20, p20p30, ..., p90p100)"="Deciles",
-               "Top         (p0p100, p1p100, p2p1000, ..., p98.999p100,p99.999p100)"="Top",
+               "Top         (p0p100, p1p100, p2p100, ..., p98.999p100,p99.999p100)"="Top",
                "Bottom      (p0p1, p0p2, p0p3, ..., p0p99.999, p0p100)"="Bottom")
 
 w_columns <- c("(a) Average"="Average", 
@@ -160,11 +160,13 @@ ui <- fluidPage(
       tabsetPanel(
         id = "heatmap_tabs",
         tabPanel(
-          title = "Through the gentle passage of time",
+          #title = "Through the gentle passage of time",
+          title ="Years",
           plotlyOutput("heatmap_year", height = "auto", width = "100%")
         ),
         tabPanel(
-          title = "Amidst the dance of percentiles and widcodes",
+         # title = "Amidst the dance of percentiles and widcodes",
+          title = "Percentiles & Widcodes",
           fluidRow(
             column(
               width = 12,
